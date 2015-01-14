@@ -364,8 +364,8 @@ public class Board : MonoBehaviour
             {
                 Debug.Log(string.Format("beat mark @ row:{0} col:{1}", r, c));
                 temp.Add(m);
-                r++;
-                c--;
+                r--;
+                c++;
             }
         }
         if (canClose)
