@@ -41,15 +41,18 @@ namespace ProgrammerBird {
         public const int CellWhite = 2;
 
         public GameBoard() {
-            this._hasColorBoard = 0;
-            this._colorBoard = 0;
+            _hasColorBoard = 0;
+            _colorBoard = 0;
         }
 
-        public GameBoard Clone() {
-            GameBoard n = new GameBoard();
-            n._hasColorBoard = _hasColorBoard;
-            n._colorBoard = _colorBoard;
-            return n;
+        public void WriteData(out UInt64 a, out UInt64 b) {
+            a = _hasColorBoard;
+            b = _colorBoard;
+        }
+
+        public void RestoreData(UInt64 a, UInt64 b) {
+            _hasColorBoard = a;
+            _colorBoard = b;
         }
 
         public int GetCell(int row, int column)
@@ -296,7 +299,10 @@ namespace ProgrammerBird {
                 return board.GetBoardScore(context);
             }
 
-            GameBoard turn = board.Clone();
+            UInt64 saveA;
+            UInt64 saveB;
+            board.WriteData(out saveA, out saveB);
+
             int bestRow = 0;
             int bestColumn = 0;
             int bestScore, enemyCell;
@@ -316,11 +322,11 @@ namespace ProgrammerBird {
             {
                 for (int c = 0; c < context.columns; c++)
                 {
-                    if (!turn.TryPlace(context, r, c, colorCell)) continue;
+                    if (!board.TryPlace(context, r, c, colorCell)) continue;
 
                     canPlay = true;
                     int tmpRow, tmpColumn;
-                    int score = PlayTurn(context, turn, enemyCell, level - 1, out tmpRow, out tmpColumn);
+                    int score = PlayTurn(context, board, enemyCell, level - 1, out tmpRow, out tmpColumn);
                     if (colorCell == GameBoard.CellWhite)
                     {
                         if (bestScore < score)
@@ -342,7 +348,7 @@ namespace ProgrammerBird {
                     }
 
                     // restore
-                    turn = board.Clone();
+                    board.RestoreData(saveA, saveB);
                 }
             }
 
