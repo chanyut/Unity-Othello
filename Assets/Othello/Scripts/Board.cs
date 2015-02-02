@@ -57,7 +57,10 @@ public class Board : MonoBehaviour
 
         if (beatenMarks != null)
         {
-            StartCoroutine(FlipAllBeatenMarks(beatenMarks));
+            for (int i = 0; i < beatenMarks.Length; i++)
+            {
+                beatenMarks[i].Flip();
+            }
         }
         return true;
     }
@@ -67,7 +70,8 @@ public class Board : MonoBehaviour
         for (int i = 0; i < marks.Length; i++)
         {
             marks[i].Flip();
-            yield return new WaitForSeconds(0.05f);
+            yield return null;
+            // yield return new WaitForSeconds(0.05f);
         }
     }
 
@@ -113,6 +117,26 @@ public class Board : MonoBehaviour
         }
     }
 
+    public bool CanPutMarkAt(int currentPlayerIndex, int row, int col) {
+        if (Grids[row, col] != null) return false;
+        Mark[] marks = GetBeatenMarkIfPutMarkAt(currentPlayerIndex, row, col);
+        if (marks.Length > 0) {
+            return true;
+        }
+        return false;
+    }
+
+    public bool CanPutMark(int currentPlayerIndex) {
+        for (int r = 0; r < NumberOfRows; r++)
+        {
+            for (int c = 0; c < NumberOfColumns; c++)
+            {
+                if (CanPutMarkAt(currentPlayerIndex, r, c)) return true;
+            }
+        }
+        return false;
+    }
+
     Mark[] GetBeatenMarkIfPutMarkAt(int currentPlayerIndex, int row, int col)
     {
         List<Mark> allMarks = new List<Mark>();
@@ -147,7 +171,7 @@ public class Board : MonoBehaviour
             }
             else
             {
-                Debug.Log(string.Format("beat mark @ row:{0} col:{1}", r, c));
+                //Debug.Log(string.Format("beat mark @ row:{0} col:{1}", r, c));
                 temp.Add(m);
                 r++;
             }
@@ -182,7 +206,7 @@ public class Board : MonoBehaviour
             }
             else
             {
-                Debug.Log(string.Format("beat mark @ row:{0} col:{1}", r, c));
+                //Debug.Log(string.Format("beat mark @ row:{0} col:{1}", r, c));
                 temp.Add(m);
                 r--;
             }
@@ -217,7 +241,7 @@ public class Board : MonoBehaviour
             }
             else
             {
-                Debug.Log(string.Format("beat mark @ row:{0} col:{1}", r, c));
+                //Debug.Log(string.Format("beat mark @ row:{0} col:{1}", r, c));
                 temp.Add(m);
                 c++;
             }
@@ -252,7 +276,7 @@ public class Board : MonoBehaviour
             }
             else
             {
-                Debug.Log(string.Format("beat mark @ row:{0} col:{1}", r, c));
+                //Debug.Log(string.Format("beat mark @ row:{0} col:{1}", r, c));
                 temp.Add(m);
                 c--;
             }
@@ -288,7 +312,7 @@ public class Board : MonoBehaviour
             }
             else
             {
-                Debug.Log(string.Format("beat mark @ row:{0} col:{1}", r, c));
+                //Debug.Log(string.Format("beat mark @ row:{0} col:{1}", r, c));
                 temp.Add(m);
                 r++;
                 c++;
@@ -325,7 +349,7 @@ public class Board : MonoBehaviour
             }
             else
             {
-                Debug.Log(string.Format("beat mark @ row:{0} col:{1}", r, c));
+                //Debug.Log(string.Format("beat mark @ row:{0} col:{1}", r, c));
                 temp.Add(m);
                 r++;
                 c--;
@@ -362,7 +386,7 @@ public class Board : MonoBehaviour
             }
             else
             {
-                Debug.Log(string.Format("beat mark @ row:{0} col:{1}", r, c));
+                //Debug.Log(string.Format("beat mark @ row:{0} col:{1}", r, c));
                 temp.Add(m);
                 r--;
                 c++;
@@ -399,7 +423,7 @@ public class Board : MonoBehaviour
             }
             else
             {
-                Debug.Log(string.Format("beat mark @ row:{0} col:{1}", r, c));
+                //Debug.Log(string.Format("beat mark @ row:{0} col:{1}", r, c));
                 temp.Add(m);
                 r--;
                 c--;

@@ -10,10 +10,77 @@ public class GamePlay : MonoBehaviour
     public Board GameBoard;
     public int CurrentPlayerIndex;
 
+    public Bot BotBig;
+    public Bot BotBird;
+
     void Start()
     {
         CurrentPlayerIndex = PLAYER_INDEX_P1;
         StartGame();
+
+        StartCoroutine(StartBotGame(BotBig, BotBird));
+    }
+
+
+    IEnumerator StartBotGame(Bot botA, Bot botB) {
+
+        botA.board = GameBoard;
+        botB.board = GameBoard;
+
+        botA.OnGameStart(PLAYER_INDEX_P1);
+        botB.OnGameStart(PLAYER_INDEX_P2);
+
+        int row = 0;
+        int column = 0;
+        while (true) {
+
+            bool gameover = true;
+            if (GameBoard.CanPutMark(PLAYER_INDEX_P1))
+            {
+                gameover = false;
+                botA.PlayTurn(out row, out column);
+                if (!GameBoard.PutMark(PLAYER_INDEX_P1, row, column))
+                {
+                    Debug.Log(string.Format("{0} Foul! {1},{2}", botA.gameObject.name, row, column));
+                    yield break;
+                }
+                yield return new WaitForSeconds(1);
+                botB.OnEnemyTurn(row, column);
+            }
+
+            if (GameBoard.CanPutMark(PLAYER_INDEX_P2)) 
+            {
+                gameover = false;
+                botB.PlayTurn(out row, out column);
+                if (!GameBoard.PutMark(PLAYER_INDEX_P2, row, column))
+                {
+                    Debug.Log(string.Format("{0} Foul! {1},{2}", botB.gameObject.name, row, column));
+                    yield break;
+                }
+                yield return new WaitForSeconds(1);
+                botA.OnEnemyTurn(row, column);
+            }
+
+            if (gameover) break;
+        }
+
+        int p1Score = 0;
+        int p2Score = 0;
+        for (int r = 0; r < GameBoard.NumberOfRows; r++)
+        {
+            for (int c = 0; c < GameBoard.NumberOfColumns; c++)
+            {
+                Mark m = GameBoard.Grids[c, r];
+                if (m == null) {
+                    continue;
+                }
+                if (m.PlayerIndex == PLAYER_INDEX_P1) p1Score++;
+                if (m.PlayerIndex == PLAYER_INDEX_P2) p2Score++;
+            }
+        }
+
+        Debug.Log(string.Format("{0} score: {1}", botA.gameObject.name, p1Score));
+        Debug.Log(string.Format("{0} score: {1}", botB.gameObject.name, p2Score));
     }
 
     void StartGame()
