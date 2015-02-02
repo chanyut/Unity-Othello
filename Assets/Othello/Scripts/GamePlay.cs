@@ -10,25 +10,34 @@ public class GamePlay : MonoBehaviour
     public Board GameBoard;
     public int CurrentPlayerIndex;
 
-    public Bot BotBig;
-    public Bot BotBird;
+    public Bot BotBlack;
+    public Bot BotWhite;
 
     void Start()
     {
         CurrentPlayerIndex = PLAYER_INDEX_P1;
         StartGame();
 
-        StartCoroutine(StartBotGame(BotBig, BotBird));
+        StartCoroutine(StartBotGame(BotBlack, BotWhite));
     }
 
 
     IEnumerator StartBotGame(Bot botA, Bot botB) {
 
-        botA.board = GameBoard;
-        botB.board = GameBoard;
-
-        botA.OnGameStart(PLAYER_INDEX_P1);
-        botB.OnGameStart(PLAYER_INDEX_P2);
+        string playerAName = "Human1";
+        string playerBName = "Human2";
+        if (botA) 
+        {
+            playerAName = botA.gameObject.name;
+            botA.board = GameBoard;
+            botA.OnGameStart(PLAYER_INDEX_P1);
+        }
+        if (botB)
+        {
+            playerBName = botB.gameObject.name;
+            botB.board = GameBoard;
+            botB.OnGameStart(PLAYER_INDEX_P2);
+        }
 
         int row = 0;
         int column = 0;
@@ -38,27 +47,76 @@ public class GamePlay : MonoBehaviour
             if (GameBoard.CanPutMark(PLAYER_INDEX_P1))
             {
                 gameover = false;
-                botA.PlayTurn(out row, out column);
-                if (!GameBoard.PutMark(PLAYER_INDEX_P1, row, column))
+
+                if (botA)
                 {
-                    Debug.Log(string.Format("{0} Foul! {1},{2}", botA.gameObject.name, row, column));
-                    yield break;
+                    Debug.Log(string.Format("{0} Turn", playerAName));
+                    
+                    botA.PlayTurn(out row, out column);
+                    if (!GameBoard.PutMark(PLAYER_INDEX_P1, row, column))
+                    {
+                        Debug.Log(string.Format("{0} Foul! {1},{2}", playerAName, row, column));
+                        yield break;
+                    }
+
                 }
+                else {
+                    while (true)
+                    {
+                        Debug.Log(string.Format("{0} Turn", playerAName));
+
+                        yield return StartCoroutine(WaitForInput());
+                        row = lastInputRow;
+                        column = lastInputColumn;
+                        if (!GameBoard.PutMark(PLAYER_INDEX_P1, row, column)) continue;
+                        break;
+                    }
+                }
+
                 yield return new WaitForSeconds(1);
-                botB.OnEnemyTurn(row, column);
+
+
+                if (botB) {
+                    botB.OnEnemyTurn(row, column);
+                }
             }
 
-            if (GameBoard.CanPutMark(PLAYER_INDEX_P2)) 
+            if (GameBoard.CanPutMark(PLAYER_INDEX_P2))
             {
                 gameover = false;
-                botB.PlayTurn(out row, out column);
-                if (!GameBoard.PutMark(PLAYER_INDEX_P2, row, column))
+
+                if (botB)
                 {
-                    Debug.Log(string.Format("{0} Foul! {1},{2}", botB.gameObject.name, row, column));
-                    yield break;
+                    Debug.Log(string.Format("{0} Turn", playerBName));
+
+                    botB.PlayTurn(out row, out column);
+                    if (!GameBoard.PutMark(PLAYER_INDEX_P2, row, column))
+                    {
+                        Debug.Log(string.Format("{0} Foul! {1},{2}", playerBName, row, column));
+                        yield break;
+                    }
                 }
+                else {
+
+                    while (true)
+                    {
+                        Debug.Log(string.Format("{0} Turn", playerBName));
+
+                        yield return StartCoroutine(WaitForInput());
+
+                        row = lastInputRow;
+                        column = lastInputColumn;
+                        if (!GameBoard.PutMark(PLAYER_INDEX_P2, row, column)) continue;
+                        break;
+                    }
+                }
+
                 yield return new WaitForSeconds(1);
-                botA.OnEnemyTurn(row, column);
+
+                if (botA)
+                {
+                    botA.OnEnemyTurn(row, column);
+                }
             }
 
             if (gameover) break;
@@ -79,8 +137,8 @@ public class GamePlay : MonoBehaviour
             }
         }
 
-        Debug.Log(string.Format("{0} score: {1}", botA.gameObject.name, p1Score));
-        Debug.Log(string.Format("{0} score: {1}", botB.gameObject.name, p2Score));
+        Debug.Log(string.Format("{0} score: {1}", playerAName, p1Score));
+        Debug.Log(string.Format("{0} score: {1}", playerBName, p2Score));
     }
 
     void StartGame()
@@ -106,25 +164,37 @@ public class GamePlay : MonoBehaviour
         }
     }
 
-    void Update()
-    {
-        if (Input.GetMouseButtonDown(0))
-        {
-            Ray inputRay = GameCamera.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hitInfo;
-            if (Physics.Raycast(inputRay, out hitInfo, GameCamera.farClipPlane))
+
+    private int lastInputRow;
+    private int lastInputColumn;
+
+    IEnumerator WaitForInput() {
+
+        while (true) {
+
+            if (Input.GetMouseButtonDown(0))
             {
-                if (hitInfo.collider.gameObject.tag == "Board")
+                Ray inputRay = GameCamera.ScreenPointToRay(Input.mousePosition);
+                RaycastHit hitInfo;
+                if (Physics.Raycast(inputRay, out hitInfo, GameCamera.farClipPlane))
                 {
-                    Debug.Log("hit board at point: " + hitInfo.point);
-                    Vector3 point = hitInfo.point;
-                    Vector2 cellSize = GameBoard.GetBoardCellSizeInWorldCoord();
-                    int row = Mathf.FloorToInt(point.z / cellSize.y);
-                    int col = Mathf.FloorToInt(point.x / cellSize.x);
-                    GameBoard.PutMark(CurrentPlayerIndex, row, col);
-                    SwitchPlayerTurn();
+                    if (hitInfo.collider.gameObject.tag == "Board")
+                    {
+                        Debug.Log("hit board at point: " + hitInfo.point);
+                        Vector3 point = hitInfo.point;
+                        Vector2 cellSize = GameBoard.GetBoardCellSizeInWorldCoord();
+                        int row = Mathf.FloorToInt(point.z / cellSize.y);
+                        int col = Mathf.FloorToInt(point.x / cellSize.x);
+
+                        lastInputRow = row;
+                        lastInputColumn = col;
+                        yield break;
+                    }
                 }
+
             }
+            yield return null;
         }
     }
+
 }
