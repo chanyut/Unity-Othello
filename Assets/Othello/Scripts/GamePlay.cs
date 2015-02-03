@@ -141,6 +141,9 @@ public class GamePlay : MonoBehaviour
 
         Debug.Log(string.Format("{0} score: {1}", playerAName, p1Score));
         Debug.Log(string.Format("{0} score: {1}", playerBName, p2Score));
+        if (p1Score > p2Score) { Debug.LogWarning("!!" + playerAName + "WIN !!"); }
+        else if (p2Score > p1Score) { Debug.LogWarning("!!" + playerBName + "WIN !!"); }
+        else { Debug.LogWarning("!! DRAW !!"); }
 
         if (AutoRestartWhenGameEnd) {
             Application.LoadLevel(0);
