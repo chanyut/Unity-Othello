@@ -13,6 +13,9 @@ public class GamePlay : MonoBehaviour
     public Bot BotBlack;
     public Bot BotWhite;
 
+    public float DelayEachTurn = 1f;
+    public bool AutoRestartWhenGameEnd = false;
+
     void Start()
     {
         CurrentPlayerIndex = PLAYER_INDEX_P1;
@@ -53,9 +56,8 @@ public class GamePlay : MonoBehaviour
                     Debug.Log(string.Format("{0} Turn", playerAName));
                     
                     botA.PlayTurn(out row, out column);
-                    if (!GameBoard.PutMark(PLAYER_INDEX_P1, row, column))
-                    {
-                        Debug.Log(string.Format("{0} Foul! {1},{2}", playerAName, row, column));
+                    if (!GameBoard.PutMark(PLAYER_INDEX_P1, row, column)) {
+                        Debug.Log(string.Format("{0} Foul! row {1}, col {2}", playerAName, row, column));
                         yield break;
                     }
 
@@ -73,7 +75,7 @@ public class GamePlay : MonoBehaviour
                     }
                 }
 
-                yield return new WaitForSeconds(1);
+                yield return new WaitForSeconds(DelayEachTurn);
 
 
                 if (botB) {
@@ -111,7 +113,7 @@ public class GamePlay : MonoBehaviour
                     }
                 }
 
-                yield return new WaitForSeconds(1);
+                yield return new WaitForSeconds(DelayEachTurn);
 
                 if (botA)
                 {
@@ -139,6 +141,10 @@ public class GamePlay : MonoBehaviour
 
         Debug.Log(string.Format("{0} score: {1}", playerAName, p1Score));
         Debug.Log(string.Format("{0} score: {1}", playerBName, p2Score));
+
+        if (AutoRestartWhenGameEnd) {
+            Application.LoadLevel(0);
+        }
     }
 
     void StartGame()
